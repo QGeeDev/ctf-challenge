@@ -79,10 +79,7 @@ func (h *ShortlinkHandler) GetQRImageFile(ctx *gin.Context) {
 	imageData, err := os.ReadFile(filePath)
 	if err != nil || len(imageData) == 0 {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error":    "Internal server error",
-			"filepath": filePath,
-			"err":      err.Error(),
-			"len":      len(imageData),
+			"error": "Internal server error",
 		})
 		return
 	}
