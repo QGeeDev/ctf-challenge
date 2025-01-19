@@ -2,13 +2,19 @@ package app
 
 import (
 	"ctf-challenge/internal/handlers"
+	"ctf-challenge/internal/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter(dbService *services.DbService) *gin.Engine {
 	r := gin.Default()
+
+	shortlinkService := services.NewShortlinkService(dbService.DbConn)
+
+	adminHandler := handlers.NewAdminHandler()
+	shortlinkHandler := handlers.NewShortlinkHandler(shortlinkService)
 
 	systemRoutes := r.Group("/system")
 	adminRoutes := r.Group("/admin")
@@ -16,8 +22,9 @@ func SetupRouter() *gin.Engine {
 
 	handlers.RegisterHealthCheckPath(systemRoutes)
 	adminRoutes.Use(addAdminHeaders())
-	handlers.RegisterAdminPaths(adminRoutes)
-	handlers.RegisterShortlinkPaths(shortlinkRouters)
+
+	adminHandler.RegisterAdminPaths(adminRoutes)
+	shortlinkHandler.RegisterShortlinkPaths(shortlinkRouters)
 	return r
 }
 

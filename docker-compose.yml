@@ -10,7 +10,8 @@ services:
       timeout: 10s
       retries: 120
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     volumes:
       - ./docker-data/api/qr_codes:/app/data/qr_codes
     networks:
@@ -23,13 +24,13 @@ services:
       - 5431:5432
     environment:
       POSTGRES_USER: username
-      POSTGRES_PASSWORD: mT034&tmt%yQ65N
-      POSTGRES_DB: public
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: shortlinksDb
       POSTGRES_LOGGING: "on"
     volumes:
       - ./docker-data/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d public -U username"]
+      test: ["CMD-SHELL", "pg_isready -d shortlinksDb -U username"]
       interval: 5s
       timeout: 10s
       retries: 120

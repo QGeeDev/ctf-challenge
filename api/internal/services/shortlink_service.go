@@ -1,26 +1,56 @@
 package services
 
 import (
+	"context"
 	"crypto/rand"
+	"ctf-challenge/internal/dto"
 	"encoding/base64"
+
+	"github.com/jackc/pgx/v5"
 )
 
-func GetFullUrlByShortlinkSlug(slug string) string {
-	//TODO: Query DB for URL
-	// If null, return empty string
-	return slug
+type ShortlinkService struct {
+	DbConn pgx.Conn
 }
 
-func CreateShortlink(targetUrl string) (string, error) {
-	result, err := generateBase64String(8)
+func NewShortlinkService(dbConn pgx.Conn) *ShortlinkService {
+	return &ShortlinkService{
+		DbConn: dbConn,
+	}
+}
+
+func (s *ShortlinkService) GetFullUrlByShortlinkSlug(slug string) (string, error) {
+	var fullLink string
+	err := s.DbConn.QueryRow(context.Background(), "SELECT full_link FROM shortlinks WHERE slug=$1", slug).Scan(&fullLink)
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return "", nil
+		}
 		return "", err
 	}
-	// TODO: Write URL to DB
-	return result, err
+	return fullLink, nil
 }
 
-func generateBase64String(length int) (string, error) {
+func (s *ShortlinkService) CreateShortlink(targetUrl string) (*dto.ShortlinkDbObject, error) {
+	result, err := s.generateBase64String(8)
+	if err != nil {
+		return nil, err
+	}
+
+	ShortlinkRecord := &dto.ShortlinkDbObject{
+		Slug:     result,
+		FullLink: targetUrl,
+	}
+	var id int
+	err = s.DbConn.QueryRow(context.Background(), "INSERT INTO shortlinks (slug, full_link) VALUES ($1, $2) returning Id", ShortlinkRecord.Slug, ShortlinkRecord.FullLink).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+
+	return ShortlinkRecord, err
+}
+
+func (s *ShortlinkService) generateBase64String(length int) (string, error) {
 	byteLength := (length * 3) / 4
 
 	randomBytes := make([]byte, byteLength)
@@ -31,4 +61,16 @@ func generateBase64String(length int) (string, error) {
 
 	encoded := base64.RawURLEncoding.EncodeToString(randomBytes)
 	return encoded[:length], nil
+}
+
+func (s *ShortlinkService) GetQrCodePath(shortlinkSlug string) (any, error) {
+	var path string
+	err := s.DbConn.QueryRow(context.Background(), "SELECT q.image_path FROM shortlinks s WHERE s.slug=$1 INNER JOIN qr_images q on q.id = s.qr_images_id_fk", shortlinkSlug).Scan(&path)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return "", nil
+		}
+		return "", err
+	}
+	return path, nil
 }

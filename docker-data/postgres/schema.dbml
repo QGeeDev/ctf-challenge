@@ -3,7 +3,7 @@ Project shortlink_service {
     Note: 'Simple shortlink service'
 }
 
-Table shortlink {
+Table shortlinks {
     id int [pk, increment]
     slug varchar(255) [not null] 
     full_link varchar(1024) [not null]
@@ -24,4 +24,4 @@ Table flags {
     flag varchar(255) [not null]
 }
 
-Ref:shortlink.qr_images_id_fk > qr_images.id [delete: cascade, update: cascade]
+Ref:shortlinks.qr_images_id_fk > qr_images.id [delete: cascade, update: cascade]

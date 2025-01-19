@@ -1,4 +1,4 @@
-CREATE TABLE "shortlink" (
+CREATE TABLE "shortlinks" (
   "id" SERIAL PRIMARY KEY,
   "slug" varchar(255) NOT NULL,
   "full_link" varchar(1024) NOT NULL,
@@ -15,6 +15,6 @@ CREATE TABLE "flags" (
   "flag" varchar(255) NOT NULL
 );
 
-ALTER TABLE "shortlink" ADD FOREIGN KEY ("qr_images_id_fk") REFERENCES "qr_images" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "shortlinks" ADD FOREIGN KEY ("qr_images_id_fk") REFERENCES "qr_images" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
-CREATE UNIQUE INDEX "idx_shortlink_slug" ON "shortlink" ("slug");
+CREATE UNIQUE INDEX "idx_shortlink_slug" ON "shortlinks" ("slug");

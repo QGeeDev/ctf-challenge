@@ -6,11 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterAdminPaths(r *gin.RouterGroup) {
-	r.GET("/", adminGetHandler)
+type AdminHandler struct {
 }
 
-func adminGetHandler(ctx *gin.Context) {
+func NewAdminHandler() *AdminHandler {
+	return &AdminHandler{}
+}
+
+func (h *AdminHandler) RegisterAdminPaths(r *gin.RouterGroup) {
+	r.GET("/", h.adminGetHandler)
+}
+
+func (h *AdminHandler) adminGetHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "admin endpoint reached",
 	})
