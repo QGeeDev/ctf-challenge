@@ -1,0 +1,27 @@
+Project shortlink_service {
+    database_type: 'PostgreSQL'
+    Note: 'Simple shortlink service'
+}
+
+Table shortlink {
+    id int [pk, increment]
+    slug varchar(255) [not null] 
+    full_link varchar(1024) [not null]
+    qr_images_id_fk int
+
+    indexes {
+        slug [name: 'idx_shortlink_slug', unique]
+    }
+}
+
+Table qr_images {
+    id int [pk, increment]
+    image_path varchar(2083) [not null] 
+}
+
+Table flags {
+    id int [pk, increment]
+    flag varchar(255) [not null]
+}
+
+Ref:shortlink.qr_images_id_fk > qr_images.id [delete: cascade, update: cascade]

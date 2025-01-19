@@ -1,0 +1,43 @@
+services:
+  api:
+    build:
+      context: "api/."
+    ports:
+      - "5001:5001"
+    healthcheck:
+      test: wget -qO- http://localhost:5001/system/_health || exit 1
+      interval: 5s
+      timeout: 10s
+      retries: 120
+    depends_on:
+      - database
+    volumes:
+      - ./docker-data/api/qr_codes:/app/data/qr_codes
+    networks:
+      - local-network
+
+  database:
+    image: "postgres:latest"
+    container_name: database
+    ports:
+      - 5431:5432
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: mT034&tmt%yQ65N
+      POSTGRES_DB: public
+      POSTGRES_LOGGING: "on"
+    volumes:
+      - ./docker-data/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d public -U username"]
+      interval: 5s
+      timeout: 10s
+      retries: 120
+    command:
+      ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
+    networks:
+      - local-network
+
+networks:
+  local-network:
+    name: local-network
